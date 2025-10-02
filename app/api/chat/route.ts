@@ -6,7 +6,7 @@ import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-const GEMINI_API_KEY = "AIzaSyBo8xPG6pmn1pwQ1nzLvGfvE_nXrYzBTgs";
+const GEMINI_API_KEY = "AIzaSyBiQwaSv7VlJ385QNB83ycCWAC2zajB4Zk";
 
 export const maxDuration = 300;
 
