@@ -1,19 +1,22 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
-import { GoogleGenAI } from "@google/genai";
 import { killDesktop, getDesktop } from "@/lib/e2b/utils";
 import { resolution } from "@/lib/e2b/tool";
 import { writeFileSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
 
 const GEMINI_API_KEY = "AIzaSyBiQwaSv7VlJ385QNB83ycCWAC2zajB4Zk";
 
 export const maxDuration = 300;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const genAIFiles = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const INSTRUCTIONS = `Nazywasz się Gemini. Jesteś pomocnym asystentem z dostępem do komputera Ubuntu 22.04. 
+
+ROZDZIELCZOŚĆ EKRANU:
+- Wszystkie screenshoty mają STAŁĄ rozdzielczość: 1024x768 pikseli
+- Współrzędne X: od 0 do 1024
+- Współrzędne Y: od 0 do 768
+- Używaj tych wartości do precyzyjnego pozycjonowania kursora
 
 DOSTĘPNE NARZĘDZIA:
 - computer_use: Kontrola desktopa (screenshot, klikanie, pisanie, przewijanie, przeciąganie) Domyślne podstawowe i preferowane narzędzie
@@ -135,13 +138,8 @@ export async function POST(req: Request) {
           screenshot: `/api/screenshots/${initialFilename}`
         });
         
-        // Upload initial screenshot to Gemini File API
-        const tempPath = join(tmpdir(), `screenshot-${Date.now()}.png`);
-        writeFileSync(tempPath, screenshot);
-        const uploadedFile = await genAIFiles.files.upload({
-          file: tempPath,
-          config: { mimeType: "image/png" },
-        });
+        // Prepare initial screenshot as inline data for Gemini
+        const screenshotBase64 = Buffer.from(screenshot).toString('base64');
         
         const model = genAI.getGenerativeModel({
           model: "gemini-2.5-flash",
@@ -170,9 +168,9 @@ export async function POST(req: Request) {
           parts: [
             { text: `Oto aktualny ekran (resolution: ${resolution.x}x${resolution.y}). Przeanalizuj go i pomóż użytkownikowi z zadaniem. Pamiętaj o proaktywnej komunikacji - najpierw powiedz co zamierzasz zrobić.` },
             {
-              fileData: {
-                mimeType: uploadedFile.mimeType,
-                fileUri: uploadedFile.uri
+              inlineData: {
+                mimeType: "image/png",
+                data: screenshotBase64
               }
             }
           ]
@@ -287,9 +285,9 @@ export async function POST(req: Request) {
                           break;
                         }
                         case "wait": {
-                          const actualDuration = Math.min(args.duration || 1, 2);
-                          await new Promise(resolve => setTimeout(resolve, actualDuration * 1000));
-                          resultText = `Waited for ${actualDuration} seconds`;
+                          const duration = args.duration || 2;
+                          await new Promise(resolve => setTimeout(resolve, duration * 1000));
+                          resultText = `Waited for ${duration} seconds`;
                           resultData = { type: "text", text: resultText };
                           break;
                         }
@@ -453,13 +451,8 @@ export async function POST(req: Request) {
               screenshot: `/api/screenshots/${finalFilename}`
             });
 
-            // Upload screenshot to Gemini File API
-            const tempPath2 = join(tmpdir(), `screenshot-${Date.now()}.png`);
-            writeFileSync(tempPath2, newScreenshot);
-            const uploadedFile2 = await genAIFiles.files.upload({
-              file: tempPath2,
-              config: { mimeType: "image/png" },
-            });
+            // Prepare screenshot as inline data for Gemini
+            const newScreenshotBase64 = Buffer.from(newScreenshot).toString('base64');
 
             chatHistory.push({
               role: "model",
@@ -493,9 +486,9 @@ export async function POST(req: Request) {
               parts: [
                 { text: `All ${functionCalls.length} action(s) completed. Continue with the next steps. Here is the current screen (resolution: ${resolution.x}x${resolution.y}):` },
                 {
-                  fileData: {
-                    mimeType: uploadedFile2.mimeType,
-                    fileUri: uploadedFile2.uri
+                  inlineData: {
+                    mimeType: "image/png",
+                    data: newScreenshotBase64
                   }
                 }
               ]
