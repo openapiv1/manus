@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { DeployButton, ProjectInfo } from "@/components/project-info";
 import { AISDKLogo } from "@/components/icons";
 import { PromptSuggestions } from "@/components/prompt-suggestions";
+import { ScreenshotViewer } from "@/components/screenshot-viewer";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -36,6 +37,7 @@ export default function Chat() {
     stop: stopGeneration,
     append,
     setMessages,
+    currentScreenshot,
   } = useCustomChat({
     api: "/api/chat",
     id: sandboxId ?? undefined,
@@ -228,6 +230,7 @@ export default function Chat() {
               ref={desktopContainerRef}
             >
               {messages.length === 0 ? <ProjectInfo /> : null}
+              {currentScreenshot && <ScreenshotViewer screenshot={currentScreenshot} />}
               {messages.map((message, i) => (
                 <PreviewMessage
                   message={message}
@@ -276,6 +279,7 @@ export default function Chat() {
           ref={mobileContainerRef}
         >
           {messages.length === 0 ? <ProjectInfo /> : null}
+          {currentScreenshot && <ScreenshotViewer screenshot={currentScreenshot} />}
           {messages.map((message, i) => (
             <PreviewMessage
               message={message}

@@ -25,6 +25,7 @@ export function useCustomChat(options: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<ChatStatus>("ready");
+  const [currentScreenshot, setCurrentScreenshot] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentMessageRef = useRef<Message | null>(null);
 
@@ -244,8 +245,8 @@ export function useCustomChat(options: UseChatOptions) {
                   return newMessages;
                 });
               } else if (data.type === "screenshot-update") {
-                // Screenshot update - można obsłużyć jeśli potrzeba
-                console.log("Screenshot updated");
+                // Update the current screenshot display
+                setCurrentScreenshot(data.screenshot);
               } else if (data.type === "error") {
                 throw new Error(data.errorText);
               }
@@ -302,5 +303,6 @@ export function useCustomChat(options: UseChatOptions) {
     stop,
     append,
     setMessages,
+    currentScreenshot,
   };
 }
