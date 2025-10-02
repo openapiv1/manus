@@ -224,13 +224,18 @@ function ComputerInvocation({
       </div>
 
       {state === "result" && result?.type === "image" && result?.data ? (
-        <div className="overflow-hidden rounded-sm">
+        <div className="overflow-hidden rounded-sm border border-zinc-200 dark:border-zinc-700">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`data:image/png;base64,${result.data}`}
             alt="Screenshot"
-            className="w-full object-contain"
+            className="w-full object-contain max-h-[600px]"
+            loading="lazy"
           />
+        </div>
+      ) : state === "result" && result?.type === "text" && result?.text ? (
+        <div className="rounded-sm border border-zinc-200 bg-white p-3 font-mono text-xs dark:border-zinc-700 dark:bg-zinc-950">
+          <pre className="whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300">{result.text}</pre>
         </div>
       ) : null}
     </div>
@@ -257,19 +262,27 @@ function BashInvocation({
   const statusIcon = renderInvocationStatus(state, isLatestMessage, status, result);
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-        <ScrollText className="h-4 w-4" aria-hidden="true" />
-      </div>
-      <div className="flex-1">
-        <div className="flex flex-col">
-          <span className="font-mono text-sm font-medium">
-            {state === "streaming" ? "Generating command" : "Running command"}
-          </span>
-          <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">{displayCommand}</span>
+    <div className="flex flex-col gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <ScrollText className="h-4 w-4" aria-hidden="true" />
         </div>
+        <div className="flex-1">
+          <div className="flex flex-col">
+            <span className="font-mono text-sm font-medium">
+              {state === "streaming" ? "Generating command" : "Running command"}
+            </span>
+            <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">{displayCommand}</span>
+          </div>
+        </div>
+        <div className="flex h-5 w-5 items-center justify-center">{statusIcon}</div>
       </div>
-      <div className="flex h-5 w-5 items-center justify-center">{statusIcon}</div>
+      
+      {state === "result" && result?.result ? (
+        <div className="rounded-sm border border-zinc-200 bg-white p-3 font-mono text-xs dark:border-zinc-700 dark:bg-zinc-950">
+          <pre className="whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300">{result.result}</pre>
+        </div>
+      ) : null}
     </div>
   );
 }
