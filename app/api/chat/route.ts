@@ -124,9 +124,15 @@ export async function POST(req: Request) {
         
         const screenshot = await desktop.screenshot();
         
+        // Save initial screenshot as PNG for frontend display
+        const initialFilename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+        const screenshotsDir = join(process.cwd(), "public", "screenshots");
+        const initialFilePath = join(screenshotsDir, initialFilename);
+        writeFileSync(initialFilePath, screenshot);
+        
         sendEvent({
           type: "screenshot-update",
-          screenshot: Buffer.from(screenshot).toString('base64')
+          screenshot: `/api/screenshots/${initialFilename}`
         });
         
         // Upload initial screenshot to Gemini File API
@@ -264,12 +270,19 @@ export async function POST(req: Request) {
                       switch (action) {
                         case "screenshot": {
                           const image = await desktop.screenshot();
+                          
+                          // Save screenshot as PNG file
+                          const filename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+                          const screenshotsDir = join(process.cwd(), "public", "screenshots");
+                          const filePath = join(screenshotsDir, filename);
+                          writeFileSync(filePath, image);
+                          
                           resultText = "Screenshot taken successfully";
-                          resultData = { type: "image", data: Buffer.from(image).toString('base64') };
+                          resultData = { type: "image", url: `/api/screenshots/${filename}` };
                           
                           sendEvent({
                             type: "screenshot-update",
-                            screenshot: Buffer.from(image).toString('base64')
+                            screenshot: `/api/screenshots/${filename}`
                           });
                           break;
                         }
@@ -363,9 +376,16 @@ export async function POST(req: Request) {
                       
                       if (action !== "screenshot") {
                         const actionScreenshot = await desktop.screenshot();
+                        
+                        // Save as PNG for frontend display
+                        const filename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+                        const screenshotsDir = join(process.cwd(), "public", "screenshots");
+                        const filePath = join(screenshotsDir, filename);
+                        writeFileSync(filePath, actionScreenshot);
+                        
                         sendEvent({
                           type: "screenshot-update",
-                          screenshot: Buffer.from(actionScreenshot).toString('base64')
+                          screenshot: `/api/screenshots/${filename}`
                         });
                       }
                     } else if (fc.name === "bash_command") {
@@ -387,9 +407,16 @@ export async function POST(req: Request) {
                       await new Promise(resolve => setTimeout(resolve, 2000));
                       
                       const bashScreenshot = await desktop.screenshot();
+                      
+                      // Save as PNG for frontend display
+                      const filename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+                      const screenshotsDir = join(process.cwd(), "public", "screenshots");
+                      const filePath = join(screenshotsDir, filename);
+                      writeFileSync(filePath, bashScreenshot);
+                      
                       sendEvent({
                         type: "screenshot-update",
-                        screenshot: Buffer.from(bashScreenshot).toString('base64')
+                        screenshot: `/api/screenshots/${filename}`
                       });
                     }
                   } catch (error) {
@@ -416,9 +443,14 @@ export async function POST(req: Request) {
           if (functionCalls.length > 0) {
             const newScreenshot = await desktop.screenshot();
             
+            // Save as PNG for frontend display
+            const finalFilename = `screenshot-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+            const finalFilePath = join(screenshotsDir, finalFilename);
+            writeFileSync(finalFilePath, newScreenshot);
+            
             sendEvent({
               type: "screenshot-update",
-              screenshot: Buffer.from(newScreenshot).toString('base64')
+              screenshot: `/api/screenshots/${finalFilename}`
             });
 
             // Upload screenshot to Gemini File API

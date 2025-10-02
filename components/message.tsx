@@ -223,11 +223,11 @@ function ComputerInvocation({
         </div>
       </div>
 
-      {state === "result" && result?.type === "image" && result?.data ? (
+      {state === "result" && result?.type === "image" && (result?.url || result?.data) ? (
         <div className="overflow-hidden rounded-sm border border-zinc-200 dark:border-zinc-700">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`data:image/png;base64,${result.data}`}
+            src={result.url || `data:image/png;base64,${result.data}`}
             alt="Screenshot"
             className="w-full object-contain max-h-[600px]"
             loading="lazy"
